@@ -1,39 +1,31 @@
 import { resolve } from 'path';
 import { env } from 'process';
-import { ask, writeLine } from '../cli';
-import { readDir, readFile, writeFile } from '../utils';
+import { Cli } from '../classes/Cli';
+import { OsuFs } from '../classes/OsuFs';
+import { writeFile } from '../utils';
 
-export default async function backup() {
-	const location = await ask(
+export default async function backup(cli: Cli) {
+	cli.clear();
+
+	const location = await cli.ask(
 		'Where is Osu! installed?',
-		resolve(env.APPDATA as string, '..', 'Local', 'osu!')
+		resolve(env.LOCALAPPDATA as string, 'osu!')
 	);
 
-	const songsDir = resolve(location, 'Songs');
-	const songsDirs = await readDir(songsDir);
+	cli.clear();
 
-	const ids = await Promise.all(
-		songsDirs.map(async songDirName => {
-			try {
-				const songPath = resolve(songsDir, songDirName);
-				const songDirFiles = await readDir(songPath);
-				const osuFileName = songDirFiles.find(fileName => fileName.endsWith('.osu')) as string;
-				const contents = await readFile(resolve(songPath, osuFileName));
-				const lines = contents.toString().split('\n');
-				const config = lines.find(line => line.includes('BeatmapID'));
-				const beatmapId = config?.split(':')[1].replace('\r', '');
+	const osuFs = new OsuFs(location);
+	const songIds = await osuFs.fetchBeatmapIds();
+	const json = JSON.stringify(songIds);
 
-				return beatmapId;
-			} catch (error) {
-				return;
-			}
-		})
+	const output = await cli.ask(
+		'And where would you like to store your backup file?',
+		resolve(env.LOCALAPPDATA as string, 'osu!')
 	);
 
-	const filteredIds = ids.filter(Boolean);
-	const json = JSON.stringify(filteredIds);
+	await writeFile(resolve(output, 'backup.json'), json);
 
-	await writeFile(resolve(location, 'backup.json'), json);
+	cli.clear();
 
-	writeLine(`Successfully backed up ${ids.length} songs!`);
+	cli.writeSuccess(`Successfully backed up ${songIds.length} songs!`);
 }
