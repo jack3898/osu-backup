@@ -13,6 +13,10 @@ export class Cli {
 		});
 	}
 
+	args() {
+		return process.argv;
+	}
+
 	option<A extends readonly string[]>(question: string, options: A) {
 		return new Promise<ReadonlyUnion<typeof options> | null>(resolve => {
 			const formattedOptions = options.map(option => `${chalk.blue('>')} ${option}\n`).join('');

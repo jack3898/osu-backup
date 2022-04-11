@@ -1,16 +1,17 @@
 import { resolve } from 'path';
 import { env } from 'process';
-import { Cli } from '../classes/Cli';
+import { ConfigFile } from '../classes/ConfigFile';
 import { OsuFs } from '../classes/OsuFs';
-import { writeFile } from '../utils';
+import { cli, writeFile } from '../utils';
 
-export default async function backup(cli: Cli) {
+export default async function backup(config: ConfigFile) {
 	cli.clear();
 
-	const location = await cli.ask(
-		'Where is Osu! installed?',
-		resolve(env.LOCALAPPDATA as string, 'osu!')
-	);
+	const { osuDir, backupLocation } = config.getAllProperties();
+
+	const location =
+		osuDir ||
+		(await cli.ask('Where is Osu! installed?', resolve(env.LOCALAPPDATA as string, 'osu!')));
 
 	cli.clear();
 
@@ -18,12 +19,14 @@ export default async function backup(cli: Cli) {
 	const songIds = await osuFs.fetchBeatmapIds();
 	const json = JSON.stringify(songIds);
 
-	const output = await cli.ask(
-		'And where would you like to store your backup file?',
-		resolve(env.LOCALAPPDATA as string, 'osu!')
-	);
+	const output =
+		backupLocation ||
+		(await cli.ask(
+			'And where would you like to store your backup file?',
+			resolve(env.LOCALAPPDATA as string, 'osu!', 'backup.json')
+		));
 
-	await writeFile(resolve(output, 'backup.json'), json);
+	await writeFile(resolve(output), json);
 
 	cli.clear();
 

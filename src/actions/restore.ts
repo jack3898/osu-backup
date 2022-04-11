@@ -1,28 +1,35 @@
 import { resolve } from 'path';
 import { env } from 'process';
-import { Cli } from '../classes/Cli';
-import { readFile } from '../utils';
+import { ConfigFile } from '../classes/ConfigFile';
+import { cli, readFile } from '../utils';
 
-export default async function restore(cli: Cli) {
+export default async function restore(config: ConfigFile) {
 	cli.clear();
 
-	const backupLocation = await cli.ask(
-		'Where is your backup file? Make sure you include the filename.',
-		resolve(env.LOCALAPPDATA as string, 'osu!', 'backup.json')
-	);
+	const { backupLocation, noCheckRestore } = config.getAllProperties();
+
+	const location =
+		backupLocation ||
+		(await cli.ask(
+			'Where is your backup file? Make sure you include the filename.',
+			resolve(env.LOCALAPPDATA as string, 'osu!', 'backup.json')
+		));
 
 	cli.clear();
 
-	const backupFileContentsRaw = await readFile(backupLocation);
+	const backupFileContentsRaw = await readFile(location);
 	const backupFileContentsJson: string[] = JSON.parse(backupFileContentsRaw.toString());
-	const ready = await cli.option('Backup file loaded. Are you ready to restore?', [
-		'n',
-		'y'
-	] as const);
 
-	cli.clear();
+	if (noCheckRestore !== 'y') {
+		const ready = await cli.option('Backup file loaded. Are you ready to restore?', [
+			'n',
+			'y'
+		] as const);
 
-	if (ready !== 'y') return void cli.writeWarning(`Operation aborted! 'y' expected.`);
+		cli.clear();
+
+		if (ready !== 'y') return void cli.writeWarning(`Operation aborted! 'y' expected.`);
+	}
 
 	const urls = backupFileContentsJson.map(songId => `osu://b/${songId}`);
 

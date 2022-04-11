@@ -6,18 +6,23 @@
 	"scripts": {
 		"tsc": "tsc",
 		"compile": "tsc && pkg ./build/index.js --output .bin/app",
-		"dev": "nodemon --exec \"./node_modules/.bin/ts-node\" src/index.ts"
+		"dev:watch": "nodemon --exec \"./node_modules/.bin/ts-node\" src/index.ts",
+		"start": "ts-node src/index.ts"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
+		"@types/lodash": "^4.14.181",
+		"@types/prettier": "^2.6.0",
 		"nodemon": "^2.0.15",
 		"pkg": "^5.6.0",
 		"ts-node": "^10.7.0",
 		"typescript": "^4.6.3"
 	},
 	"dependencies": {
-		"chalk": "^4.1.2"
+		"chalk": "^4.1.2",
+		"lodash": "^4.17.21",
+		"yargs": "^17.4.1"
 	}
 }
