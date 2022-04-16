@@ -6,12 +6,14 @@ import { cli } from '../utils';
 
 export default async function restore(config: ConfigFile) {
 	cli.writeLine(
-		'You will be asked questions so you are never asked again when using this backup utility.'
+		'You will be asked questions so you are never asked again when using this backup utility.\n' +
+			"You may type 'skip' to skip the answer."
 	);
 
-	cli.writeLine("You may type 'skip' to skip the answer.");
-
 	await config.reset();
+
+	cli.writeLine('Your current config is displayed below.');
+	cli.writeTable(config.getAllProperties());
 
 	/**
 	 * QUESTION 1
@@ -75,8 +77,9 @@ export default async function restore(config: ConfigFile) {
 
 		cli.clear();
 
-		if (defaultAction !== 'skip' && optionValid)
+		if (defaultAction !== 'skip' && optionValid) {
 			config.addProperty('defaultAction', defaultAction, true);
+		}
 	} else {
 		cli.clear();
 		cli.writeWarning('Skipped...');
@@ -93,21 +96,22 @@ export default async function restore(config: ConfigFile) {
 		'skip'
 	] as const);
 
+	cli.clear();
+
 	if (setupGist === 'y') {
 		cli.writeLine(
 			'This process will guide you through authorising this app to manage a GitHub Gist backup on your behalf.\n' +
-				'When you next run your backup, the backup will be stored locally in addition to being uploaded to GitHub Gist.\n' +
-				'WARNING: Cloud backup storage functionality has not yet been added! This only authorises this app.'
+				'When you next run your backup, the backup will be stored locally in addition to being uploaded to GitHub Gist.'
 		);
 
 		const gistClientId = config.addProperty('gistClientId', '4ed541704e2984314e8a');
-		const gistApi = new Gist(gistClientId);
+		const gistApi = Gist.asBasic(gistClientId);
 		const promptData = await gistApi.getInformationForPrompt();
 
 		cli.writeLine('Your browser will open.\nSign in to GitHub, and insert the following code:');
 		cli.writeWarning(promptData.user_code);
 
-		await cli.wait(2000);
+		await cli.wait(5000);
 
 		cli.run('https://github.com/login/device');
 		cli.writeLine('Waiting for authorisation...');

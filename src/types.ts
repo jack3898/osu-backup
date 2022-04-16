@@ -7,6 +7,7 @@ export interface ConfigFileProps {
 	defaultAction: 'backup' | 'restore';
 	gistClientId: string;
 	gistAccessToken: string;
+	gistFileId: string;
 }
 
 export interface GistPromptInfo {

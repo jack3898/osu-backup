@@ -59,6 +59,11 @@ export class Cli {
 		console.clear();
 	}
 
+	writeTable(object: any) {
+		console.table(object);
+		console.log('\n');
+	}
+
 	writeLine(text: string) {
 		console.log(text + '\n');
 	}
