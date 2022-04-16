@@ -45,7 +45,3 @@ async function main() {
 }
 
 main();
-
-// import { spawn } from 'child_process';
-
-// spawn('explorer.exe', ['osu://b/2870818']);
